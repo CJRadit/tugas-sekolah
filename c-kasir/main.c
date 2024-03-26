@@ -70,7 +70,7 @@ int main() {
         checkout = confirmCheckout();
     }
 
-    int totalPrice;
+    int totalPrice = 0;
 
     printf("========= NOTA =========\n");
     for (int i = 0; i < 4; i++) {
