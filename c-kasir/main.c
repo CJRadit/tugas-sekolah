@@ -101,7 +101,7 @@ int main() {
         totalPrice += itemPrice * choices[i];
     }
     printf("------------------------\n");
-    printf("Total harga: %d\n", totalPrice);
+    printf("Total: %d\n", totalPrice);
     printf("========================\n");
     printf("    Terima kasih! :)\n\n");
 
@@ -136,7 +136,7 @@ int main() {
         totalPrice += itemPrice * choices[i];
     }
     fprintf(file, "------------------------\n");
-    fprintf(file, "Total harga: %d\n", totalPrice);
+    fprintf(file, "Total: %d\n", totalPrice);
     fprintf(file, "========================\n");
     fprintf(file, "    Terima kasih! :)\n\n");
     fclose(file);
