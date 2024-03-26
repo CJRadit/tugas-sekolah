@@ -96,7 +96,7 @@ int main() {
                 itemPrice = 75000;
         }
         printf(" => %dkg\n", choices[i]);
-        printf("  %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
+        printf("> %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
 
         totalPrice += itemPrice * choices[i];
     }
@@ -131,7 +131,7 @@ int main() {
                 itemPrice = 75000;
         }
         fprintf(file, " => %dkg\n", choices[i]);
-        fprintf(file, "  %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
+        fprintf(file, "> %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
 
         totalPrice += itemPrice * choices[i];
     }
@@ -140,6 +140,7 @@ int main() {
     fprintf(file, "========================\n");
     fprintf(file, "    Terima kasih! :)\n\n");
     fclose(file);
+
     // Apa bedanya dengan 0?
     // return EXIT_SUCCESS;
     // Butuh stdlib.io
