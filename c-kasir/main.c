@@ -25,7 +25,7 @@ int getChoice(int selectedChoices[]) {
     while (
         choice > 4 ||
         choice <= 0 ||
-        duped == false
+        duped == true
     ) {
         printf("Nomor buah: ");
         scanf("%d", &choice);
@@ -47,6 +47,7 @@ int getQty() {
         printf("Jumlah kilogram: ");
         scanf("%d", &qty);
     }
+    return qty;
 }
 
 int calcPrice(int choice, int qty) {
@@ -68,11 +69,11 @@ int calcPrice(int choice, int qty) {
 }
 
 bool confirmCheckout() {
-    bool confirm = false;
+    bool checkout = true;
     int choice = 0;
 
     printf("\n========================\n");
-    printf("Pesanan tercatat. Apakah Anda ingin tetap berbelanja?\n"):
+    printf("Pesanan tercatat. Apakah Anda ingin tetap berbelanja?\n");
     printf("1. Ya\n");
     printf("Lainnya tidak\n");
     printf("------------------------\n");
@@ -80,7 +81,7 @@ bool confirmCheckout() {
     scanf("%d", &choice);
     printf("========================\n\n");
 
-    if (choice == 1) checkout == false;
+    if (choice == 1) checkout = false;
     return checkout;
 }
 
@@ -97,7 +98,7 @@ int main() {
         printf("========================\n");
         totalPrice += calcPrice(choice, qty);
         choices[i] = choice;
-        i++
+        i++;
         checkout = confirmCheckout();
     }
 
