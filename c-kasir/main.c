@@ -3,14 +3,7 @@
 
 // Aku tidak pandai memberi nama ...
 
-bool isDuplicate(int choice, int choices[]) {
-    for (int i = 0; i < 4; i++) {
-        if (choices[i] == choice) return true;
-    }
-    return false;
-}
-
-int getChoice(int selectedChoices[]) {
+int getChoice() {
     int choice = 0;
 
     printf("========================\n");
@@ -19,53 +12,32 @@ int getChoice(int selectedChoices[]) {
     printf("2. Tomat (10000/kg)\n");
     printf("3. Wortel (12000/kg)\n");
     printf("4. Cabai (75000/kg)\n");
-    printf("========================\n");
+    printf("------------------------\n");
 
-    bool duped = false;
-    while (
-        choice > 4 ||
-        choice <= 0 ||
-        duped == true
-    ) {
+    printf("\n");
+    do {
+        // Referensi: ANSI code
+        printf("\033[A");
         printf("Nomor buah: ");
+        printf("    \b\b\b\b");
         scanf("%d", &choice);
-        if (choice > 4 || choice <= 0) {
-            // printf("Pilihan invalid.\n");
-            continue;
-        }
-        duped = isDuplicate(choice, selectedChoices);
-        if (duped == true) {
-            printf("Pilihan duplikat.\n");
-        }
-    }
+    } while (choice > 4 || choice <= 0);
+
     return choice;
 }
 
 int getQty() {
     int qty = 0;
-    while (qty <= 0) {
-        printf("Jumlah kilogram: ");
-        scanf("%d", &qty);
-    }
-    return qty;
-}
 
-int calcPrice(int choice, int qty) {
-    int itemPrice;
-    switch (choice) {
-        case 1:
-            itemPrice = 50000;
-            break;
-        case 2:
-            itemPrice = 10000;
-            break;
-        case 3:
-            itemPrice = 12000;
-            break;
-        default:
-            itemPrice = 75000;
-    }
-    return itemPrice * qty;
+    printf("\n");
+    do {
+        printf("\033[A");
+        printf("Berat (kg): ");
+        printf("    \b\b\b\b");
+        scanf("%d", &qty);
+    } while (qty <= 0);
+
+    return qty;
 }
 
 bool confirmCheckout() {
@@ -73,9 +45,10 @@ bool confirmCheckout() {
     int choice = 0;
 
     printf("\n========================\n");
-    printf("Pesanan tercatat. Apakah Anda ingin tetap berbelanja?\n");
+    printf("Pesanan tercatat.\n");
+    printf("Lanjut belanja?\n");
     printf("1. Ya\n");
-    printf("Lainnya tidak\n");
+    printf("Lainnya: Tidak\n");
     printf("------------------------\n");
     printf("Pilihan: ");
     scanf("%d", &choice);
@@ -87,21 +60,50 @@ bool confirmCheckout() {
 
 int main() {
     int choices[4] = { 0, 0, 0, 0 };
-    int totalPrice = 0;
-    int i = 0;
     bool checkout = false;
 
-    while (checkout != true && i < 4) {
-        int choice = getChoice(choices);
-        printf("------------------------\n");
+    while (checkout != true) {
+        int choice = getChoice();
         int qty = getQty();
         printf("========================\n");
-        totalPrice += calcPrice(choice, qty);
-        choices[i] = choice;
-        i++;
+
+        choices[--choice] = qty;
         checkout = confirmCheckout();
     }
 
+    int totalPrice;
+
     printf("========================\n");
-    printf("Total harga:  %d", totalPrice);
+    for (int i = 0; i < 4; i++) {
+        if (choices[i] < 1) continue;
+
+        int itemPrice;
+
+        switch (i) {
+            case 0:
+                printf("Apel  ");
+                itemPrice = 50000;
+                break;
+            case 1:
+                printf("Tomat ");
+                itemPrice = 10000;
+                break;
+            case 2:
+                printf("Wortel");
+                itemPrice = 12000;
+                break;
+            default:
+                printf("Cabai ");
+                itemPrice = 75000;
+        }
+        printf(" => %dkg\n", choices[i]);
+        printf("  %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
+
+        totalPrice += itemPrice * choices[i];
+    }
+    printf("------------------------\n");
+    printf("Total harga: %d\n", totalPrice);
+    printf("========================\n");
+
+    return 0;
 }
