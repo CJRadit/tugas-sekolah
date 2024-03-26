@@ -6,8 +6,7 @@
 int getChoice() {
     int choice = 0;
 
-    printf("========================\n");
-    printf("       Buah-buahan      \n");
+    printf("========= ITEM =========\n");
     printf("1. Apel (50000/kg)\n");
     printf("2. Tomat (10000/kg)\n");
     printf("3. Wortel (12000/kg)\n");
@@ -44,7 +43,7 @@ bool confirmCheckout() {
     bool checkout = true;
     int choice = 0;
 
-    printf("\n========================\n");
+    printf("\n======= CHECKOUT =======\n");
     printf("Pesanan tercatat.\n");
     printf("Lanjut belanja?\n");
     printf("1. Ya\n");
@@ -73,7 +72,7 @@ int main() {
 
     int totalPrice;
 
-    printf("========================\n");
+    printf("========= NOTA =========\n");
     for (int i = 0; i < 4; i++) {
         if (choices[i] < 1) continue;
 
@@ -104,6 +103,45 @@ int main() {
     printf("------------------------\n");
     printf("Total harga: %d\n", totalPrice);
     printf("========================\n");
+    printf("    Terima kasih! :)\n\n");
 
+    FILE *file;
+    file = fopen("nota.txt", "a+");
+    fprintf(file, "========= NOTA =========\n");
+    for (int i = 0; i < 4; i++) {
+        if (choices[i] < 1) continue;
+
+        int itemPrice;
+
+        switch (i) {
+            case 0:
+                fprintf(file, "Apel  ");
+                itemPrice = 50000;
+                break;
+            case 1:
+                fprintf(file, "Tomat ");
+                itemPrice = 10000;
+                break;
+            case 2:
+                fprintf(file, "Wortel");
+                itemPrice = 12000;
+                break;
+            default:
+                fprintf(file, "Cabai ");
+                itemPrice = 75000;
+        }
+        fprintf(file, " => %dkg\n", choices[i]);
+        fprintf(file, "  %d x %d = %d\n", itemPrice, choices[i], itemPrice * choices[i]);
+
+        totalPrice += itemPrice * choices[i];
+    }
+    fprintf(file, "------------------------\n");
+    fprintf(file, "Total harga: %d\n", totalPrice);
+    fprintf(file, "========================\n");
+    fprintf(file, "    Terima kasih! :)\n\n");
+    fclose(file);
+    // Apa bedanya dengan 0?
+    // return EXIT_SUCCESS;
+    // Butuh stdlib.io
     return 0;
 }
