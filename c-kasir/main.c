@@ -40,3 +40,11 @@ int getChoice(int selectedChoices[]) {
     }
     return choice;
 }
+
+int getQty() {
+    int qty = 0;
+    while (qty <= 0) {
+        printf("Jumlah kilogram: ");
+        scanf("%d", &qty);
+    }
+}
