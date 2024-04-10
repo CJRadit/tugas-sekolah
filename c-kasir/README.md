@@ -5,4 +5,4 @@ Anda dapat memilih item beserta kuantitasnya. Setelah selesai memilih, Anda dapa
 
 ## Screenshot
 
-![Image](Screenshot.jpg)
+![Image](assets/Screenshot-v2.jpg)
