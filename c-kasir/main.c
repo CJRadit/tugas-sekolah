@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 
 // Aku tidak pandai memberi nama ...
 
@@ -87,12 +88,13 @@ void show_items()
     int number = 0;
     for (int i = 0; i < items_size; i++)
     {
-        printf("%d. %s (%d/kg)\n", ++number, items[i].name, items[i].price);
+        printf("%d. %s (%'d/kg)\n", ++number, items[i].name, items[i].price);
     }
 }
 
 void run_cashier()
 {
+    // Metode cart saat ini butuh banyak memori jika punya banyak item di items
     int *cart;
     cart = (int *)malloc(items_max_size * sizeof(int));
     if (cart == NULL)
@@ -100,6 +102,9 @@ void run_cashier()
         printf("Alokasi memori untuk cart di run_cashier() gagal.\n");
         return;
     }
+    // Why, Windows? Why?
+    for (int i = 0; i < items_max_size; i++)
+        cart[i] = 0;
 
     int finished = 0;
     do
@@ -117,7 +122,7 @@ void run_cashier()
         {
             // Referensi: ANSI code
             printf("\033[A");
-            printf("Pilih (0-%d): ", items_size);
+            printf("Pilih (0-%'d): ", items_size);
             printf("    \b\b\b\b");
             scanf("%d", &choice);
         } while (choice < 0 || choice > items_size);
@@ -153,10 +158,9 @@ void run_cashier()
         do
         {
             printf("\033[A");
-            printf("Pilih (0-3): ");
+            printf("Pilih (1-3): ");
             printf("    \b\b\b\b");
             scanf("%d", &checkout);
-
         } while (checkout < 1 || checkout > 3);
         printf("========================\n\n");
 
@@ -168,7 +172,7 @@ void run_cashier()
             {
                 if (cart[i] <= 0)
                     continue;
-                printf("%d. %s => %dkg\n", ++number, items[i].name, cart[i]);
+                printf("%d. %s => %'dkg\n", ++number, items[i].name, cart[i]);
             }
             printf("========================\n\n");
             goto label_checkout; // Mungkin aku akan buat function terpisah ...
@@ -185,11 +189,11 @@ void run_cashier()
             continue;
 
         total_price += items[i].price * cart[i];
-        printf("%s => %dkg\n", items[i].name, cart[i]);
-        printf("> %d x %d = %d\n", items[i].price, cart[i], items[i].price * cart[i]);
+        printf("%s => %'dkg\n", items[i].name, cart[i]);
+        printf("> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
     }
     printf("------------------------\n");
-    printf("Total: %d\n", total_price);
+    printf("Total: %'d\n", total_price);
     printf("========================\n");
     printf("    Terima kasih! :)\n");
 
@@ -201,11 +205,11 @@ void run_cashier()
     {
         if (cart[i] <= 0)
             continue;
-        fprintf(file, "%s => %dkg\n", items[i].name, cart[i]);
-        fprintf(file, "> %d x %d = %d\n", items[i].price, cart[i], items[i].price * cart[i]);
+        fprintf(file, "%s => %'dkg\n", items[i].name, cart[i]);
+        fprintf(file, "> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
     }
     fprintf(file, "------------------------\n");
-    fprintf(file, "Total: %d\n", total_price);
+    fprintf(file, "Total: %'d\n", total_price);
     fprintf(file, "========================\n");
     // fprintf(file, "    Terima kasih! :)\n");
     fclose(file);
@@ -228,7 +232,7 @@ void show_insert_item() {
 
     printf("------------------------\n");
     printf("Nama: %s\n", item.name);
-    printf("Harga: %d\n", item.price);
+    printf("Harga: %'d\n", item.price);
     printf("Simpan item?\n");
     printf("1. Ya\n");
     printf("0. Tidak\n");
@@ -259,7 +263,7 @@ void show_delete_item() {
 
     do {
         printf("\033[A");
-        printf("Pilih (0-%d): ", items_size);
+        printf("Pilih (0-%'d): ", items_size);
         printf("    \b\b\b\b");
         scanf ("%d", &i);
     } while (i < 0 || i > items_size);
@@ -297,6 +301,8 @@ void show_delete_item() {
 
 int main()
 {
+    setlocale(LC_NUMERIC, "");
+
     items_size = 4;
     items_max_size = 4;
     items = (struct Item *)malloc(items_size * sizeof(struct Item));
