@@ -180,8 +180,53 @@ void run_cashier()
         if (checkout == 3) finished = 1;
     } while (finished != 1);
 
-    // NOTA
     int total_price = 0;
+    for (int i = 0; i < items_max_size; i++)
+    {
+        if (cart[i] <= 0)
+            continue;
+        total_price += items[i].price * cart[i];
+    }y
+
+    char use_di_monescount;
+    int final_price = total_price;
+    int received_money = 0;
+
+    // Pembayaran
+    int discount = 0;
+    printf("====== PEMBAYARAN ======\n");
+    printf("Tambah diskon? (Y/n): ");
+    while (1)
+    {
+        printf("Tambah diskon? (Y/n): ");
+        use_discount = getchar();
+        fflush(stdin);
+        if (
+            use_discount == 'Y' ||
+            use_discount == 'y' ||
+            use_discount == 'N' ||
+            use_discount == 'n' ||
+            use_discount == 0x0A // ini Enter
+        ) break;
+    }
+    if (
+        use_discount == 'Y' ||
+        use_discount == 'y' ||
+        use_discount == 0x0A
+    )
+    {
+        printf("Diskon: ");
+        scanf("%d", discount);
+    }
+    printf("------------------------\n");
+    printf("Total: %'d\n", total_price);
+    printf("------------------------\n");
+    printf("Uang yang diterima: ");
+    scanf("%d", );
+    printf("------------------------\n");
+    printf("========================\n");
+
+    // NOTA
     printf("========= NOTA =========\n");
     for (int i = 0; i < items_max_size; i++)
     {
@@ -217,7 +262,8 @@ void run_cashier()
     free(cart);
 }
 
-void show_insert_item() {
+void show_insert_item()
+{
     struct Item item;
 
     printf("====== TAMBAH ITEM =====\n");
@@ -253,7 +299,8 @@ void show_insert_item() {
     printf("========================\n");
 }
 
-void show_delete_item() {
+void show_delete_item()
+{
     int i = -1;
 
     printf("====== DELETE ITEM =====\n");
