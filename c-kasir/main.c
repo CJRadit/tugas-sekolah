@@ -186,27 +186,28 @@ void run_cashier()
         if (cart[i] <= 0)
             continue;
         total_price += items[i].price * cart[i];
-    }y
+    }
 
-    char use_di_monescount;
-    int final_price = total_price;
-    int received_money = 0;
+    char use_discount;
+    int final_price = 0,
+        received_money = 0,
+        exchanged_money = 0;
 
     // Pembayaran
     int discount = 0;
     printf("====== PEMBAYARAN ======\n");
-    printf("Tambah diskon? (Y/n): ");
+    printf("Harga: %'d\n", total_price);
+    printf("------------------------\n");
     while (1)
     {
         printf("Tambah diskon? (Y/n): ");
-        use_discount = getchar();
-        fflush(stdin);
+        scanf (" %c", &use_discount);
         if (
             use_discount == 'Y' ||
             use_discount == 'y' ||
             use_discount == 'N' ||
-            use_discount == 'n' ||
-            use_discount == 0x0A // ini Enter
+            use_discount == 'n'
+            // use_discount == 0x0A // ini Enter
         ) break;
     }
     if (
@@ -215,16 +216,32 @@ void run_cashier()
         use_discount == 0x0A
     )
     {
-        printf("Diskon: ");
-        scanf("%d", discount);
+        while (discount <= 0)
+        {
+            printf("Diskon: ");
+            scanf("%d", &discount);
+        }
+        if (total_price > discount)
+            final_price = total_price - discount;
     }
     printf("------------------------\n");
-    printf("Total: %'d\n", total_price);
+    printf("Total: %'d\n", final_price);
     printf("------------------------\n");
-    printf("Uang yang diterima: ");
-    scanf("%d", );
-    printf("------------------------\n");
-    printf("========================\n");
+    if (final_price > 0)
+    {
+        printf("Bayar: ");
+        scanf ("%d", &received_money);
+        while(received_money < final_price)
+        {
+            printf("Uang tidak mencukupi!\n");
+            printf("Bayar: ");
+            scanf ("%d", &received_money);
+        }
+        printf("------------------------\n");
+    }
+    exchanged_money = received_money - final_price;
+    printf("Kembali: %'d\n", exchanged_money);
+    printf("========================\n\n");
 
     // NOTA
     printf("========= NOTA =========\n");
@@ -232,13 +249,16 @@ void run_cashier()
     {
         if (cart[i] <= 0)
             continue;
-
-        total_price += items[i].price * cart[i];
         printf("%s => %'dkg\n", items[i].name, cart[i]);
         printf("> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
     }
     printf("------------------------\n");
-    printf("Total: %'d\n", total_price);
+    printf("Harga:   %'d\n", total_price);
+    printf("Diskon:  %'d\n", discount);
+    printf("Total:   %'d\n", final_price);
+    printf("------------------------\n");
+    printf("Bayar:   %'d\n", received_money);
+    printf("Kembali: %'d\n", exchanged_money);
     printf("========================\n");
     printf("    Terima kasih! :)\n");
 
@@ -254,7 +274,12 @@ void run_cashier()
         fprintf(file, "> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
     }
     fprintf(file, "------------------------\n");
-    fprintf(file, "Total: %'d\n", total_price);
+    fprintf(file, "Harga:   %'d\n", total_price);
+    fprintf(file, "Diskon:  %'d\n", discount);
+    fprintf(file, "Total:   %'d\n", final_price);
+    fprintf(file, "------------------------\n");
+    fprintf(file, "Bayar:   %'d\n", received_money);
+    fprintf(file, "Kembali: %'d\n", exchanged_money);
     fprintf(file, "========================\n");
     // fprintf(file, "    Terima kasih! :)\n");
     fclose(file);
