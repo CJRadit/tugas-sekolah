@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <locale.h>
 
 // Kenapa I/O Windows berbeda ...
@@ -38,14 +39,9 @@ int show_login()
 
     for (int i = 0; i < users_size; i++)
     {
-        printf("> user.username = %s; users[%d].username = %s\n", user.username, i, users[i].username);
-        if (users[i].username == user.username)
-        {
-            printf("salah");
+        if (strcmp(users[i].username, user.username) == 0) // strcmp() return-nya 0 dan -1?
             continue;
-        }
-        printf("> user.password = %s; users[%d].password = %s\n", user.password, i, users[i].password);
-        if (users[i].password != user.password)
+        if (strcmp(users[i].password, user.password) == 0)
             continue;
         return 1;
     }
