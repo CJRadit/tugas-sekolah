@@ -2,7 +2,13 @@
 #include <stdlib.h>
 #include <locale.h>
 
-// Aku tidak pandai memberi nama ...
+// Kenapa I/O Windows berbeda ...
+
+struct User
+{
+    char username[32];
+    char *password;
+};
 
 struct Item
 {
@@ -10,8 +16,41 @@ struct Item
     int price;
 };
 
+int users_size, users_max_size;
+struct User *users;
+
 int items_size, items_max_size;
 struct Item *items;
+
+int show_login()
+{
+    struct User user;
+    int c;
+
+    printf("========= LOGIN ========\n");
+    printf("Username: ");
+    scanf ("%32s", user.username);
+    while ((c = fgetc(stdin)) != '\n' && c != EOF);
+    c = 0;
+    printf("Password: ");
+    scanf ("%256s", user.password);
+    while ((c = fgetc(stdin)) != '\n' && c != EOF);
+
+    for (int i = 0; i < users_size; i++)
+    {
+        printf("> user.username = %s; users[%d].username = %s\n", user.username, i, users[i].username);
+        if (users[i].username == user.username)
+        {
+            printf("salah");
+            continue;
+        }
+        printf("> user.password = %s; users[%d].password = %s\n", user.password, i, users[i].password);
+        if (users[i].password != user.password)
+            continue;
+        return 1;
+    }
+    return 0;
+}
 
 void insert_item(struct Item item)
 {
@@ -376,6 +415,22 @@ void show_delete_item()
 int main()
 {
     setlocale(LC_NUMERIC, "");
+    
+    users_size = 2;
+    users_max_size = 2;
+    users = (struct User *)malloc(users_size * sizeof(struct Item));
+    if (users == NULL)
+    {
+        printf("Alokasi memori untuk items gagal.\n");
+        return 1;
+    }
+
+    users[0] = (struct User){.username = "admin", .password = "admin"};
+    users[1] = (struct User){.username = "kasir", .password = "12345678"};
+
+    int login;
+    if ((login = show_login()) == 0)
+        return 1;
 
     items_size = 4;
     items_max_size = 4;
