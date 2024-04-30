@@ -189,7 +189,7 @@ void run_cashier()
     }
 
     char use_discount;
-    int final_price = 0,
+    int final_price = total_price,
         received_money = 0,
         exchanged_money = 0;
 
@@ -223,6 +223,8 @@ void run_cashier()
         }
         if (total_price > discount)
             final_price = total_price - discount;
+        else
+            final_price = 0;
     }
     printf("------------------------\n");
     printf("Total: %'d\n", final_price);
