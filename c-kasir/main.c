@@ -2,13 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <stdbool.h>
 
 // Kenapa I/O Windows berbeda ...
+// Dan aku tahu aku bisa pakai 1 dan 0 daripada true dan false
+// Tapi aku cuma butuh 2^1 untuk beberapa tempat
 
 struct User
 {
     char username[32];
-    char *password;
+    char password[256];
+    int is_admin;
 };
 
 struct Item
@@ -19,14 +23,15 @@ struct Item
 
 int users_size, users_max_size;
 struct User *users;
+int current_user_index;
 
 int items_size, items_max_size;
 struct Item *items;
 
-int show_login()
+bool show_login()
 {
     struct User user;
-    int c;
+    int c = 0;
 
     printf("========= LOGIN ========\n");
     printf("Username: ");
@@ -37,18 +42,21 @@ int show_login()
     scanf ("%256s", user.password);
     while ((c = fgetc(stdin)) != '\n' && c != EOF);
 
+    printf("========================");
     for (int i = 0; i < users_size; i++)
     {
-        if (strcmp(users[i].username, user.username) == 0) // strcmp() return-nya 0 dan -1?
+        if (strcmp(users[i].username, user.username) != 0) // strcmp() return 0 if true?
             continue;
-        if (strcmp(users[i].password, user.password) == 0)
+        if (strcmp(users[i].password, user.password) != 0)
             continue;
-        return 1;
+        current_user_index = i;
+        printf("\n\n");
+        return true;
     }
-    return 0;
+    return false;
 }
 
-void insert_item(struct Item item)
+bool insert_item(struct Item item)
 {
     // Menurut orang di internet, mengubah alokasi memori setiap kali
     // array diubah akan tidak baik untuk performa, karena harus dijalankan
@@ -60,16 +68,15 @@ void insert_item(struct Item item)
         items = (struct Item *)realloc(items, items_max_size * sizeof(struct Item));
     }
 
-    if (items != NULL)
-    {
-        items[items_size] = item;
-        items_size++;
-    }
-    else
+    if (items == NULL)
     {
         printf("Alokasi memori untuk items di insert_item() gagal.\n");
-        // return 1;
+        return false;
     }
+
+    items[items_size] = item;
+    items_size++;
+    return true;
 }
 
 void delete_item(int item_index)
@@ -97,19 +104,25 @@ void delete_item(int item_index)
 int show_menu()
 {
     int choice = -1;
+    int max_menu = 2;
+    if (users[current_user_index].is_admin == 1)
+        max_menu = 4;
 
     printf("========= MENU =========\n");
     printf("1. Kasir\n");
     printf("2. Lihat daftar item\n");
-    printf("3. Tambah item\n");
-    printf("4. Hapus item\n");
+    if (users[current_user_index].is_admin == 1)
+    {
+        printf("3. Tambah item\n");
+        printf("4. Hapus item\n");
+    }
     printf("0. Keluar\n");
     printf("------------------------\n");
     printf("\n");
-    while (choice < 0 || choice > 4)
+    while (choice < 0 || choice > max_menu)
     {
         printf("\033[F");
-        printf("Pilih (0-4): ");
+        printf("Pilih (0-%d): ", max_menu);
         printf("    \b\b\b\b");
         scanf("%d", &choice);
     }
@@ -324,6 +337,7 @@ void run_cashier()
     free(cart);
 }
 
+// Ini bukan aplikasi produksi, jadi aku gk perlu cek admin di sini, atau di atas
 void show_insert_item()
 {
     struct Item item;
@@ -353,8 +367,8 @@ void show_insert_item()
         printf("    \b\b\b\b");
         scanf("%d", &save);
     } while (save < 0 || save > 1);
-    if (save == 1) {
-        insert_item(item);
+    if (save == 1 && insert_item(item) == true)
+    {
         printf("------------------------\n");
         printf("Item tersimpan!\n");
     }
@@ -411,22 +425,22 @@ void show_delete_item()
 int main()
 {
     setlocale(LC_NUMERIC, "");
-    
+
     users_size = 2;
     users_max_size = 2;
-    users = (struct User *)malloc(users_size * sizeof(struct Item));
+    users = (struct User *)malloc(users_size * sizeof(struct User));
     if (users == NULL)
     {
         printf("Alokasi memori untuk items gagal.\n");
         return 1;
     }
 
-    users[0] = (struct User){.username = "admin", .password = "admin"};
-    users[1] = (struct User){.username = "kasir", .password = "12345678"};
+    users[0] = (struct User){.username = "admin", .password = "admin", .is_admin = 1};
+    users[1] = (struct User){.username = "kasir", .password = "12345678", .is_admin = 0};
 
     int login;
-    if ((login = show_login()) == 0)
-        return 1;
+    if ((login = show_login()) != true)
+        return 0;
 
     items_size = 4;
     items_max_size = 4;
