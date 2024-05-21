@@ -19,6 +19,7 @@ struct Item
 {
     char name[32];
     int price;
+    int inventory;
 };
 
 int users_size, users_max_size;
@@ -101,6 +102,38 @@ void delete_item(int item_index)
     }
 }
 
+bool check_item_inventory(int item_index, int qty)
+{
+    if (item_index < 0 || item_index >= items_max_size)
+        return false;
+
+    if (items[item_index].inventory < qty)
+        return false;
+
+    return true;
+}
+
+bool increase_item_inventory(int item_index, int qty)
+{
+    if (item_index < 0 || item_index >= items_max_size)
+        return false;
+
+    items[item_index].inventory += qty;
+    return true;
+}
+
+bool decrease_item_inventory(int item_index, int qty)
+{
+    if (item_index < 0 || item_index >= items_max_size)
+        return false;
+
+    if (items[item_index].inventory < qty)
+        return false;
+
+    items[item_index].inventory -= qty;
+    return true;
+}
+
 int show_menu()
 {
     int choice = -1;
@@ -136,7 +169,7 @@ void show_items()
     int number = 0;
     for (int i = 0; i < items_size; i++)
     {
-        printf("%d. %s (%'d/kg)\n", ++number, items[i].name, items[i].price);
+        printf("%d. %s (%'d/kg) (%'dkg)\n", ++number, items[i].name, items[i].price, items[i].inventory);
     }
 }
 
@@ -188,6 +221,13 @@ void run_cashier()
             printf("Berat (kg): ");
             printf("    \b\b\b\b");
             scanf("%d", &qty);
+
+            if (check_item_inventory(choice, qty) == false)
+            {
+                printf("\033[A");
+                printf("Berat (%'dkg) melebihi kuantitas item (%'dkg).\n\n", qty, items[choice].inventory);
+                qty = 0;
+            }
         } while (qty <= 0);
         printf("========================\n\n");
 
@@ -227,6 +267,8 @@ void run_cashier()
         }
         if (checkout == 3) finished = 1;
     } while (finished != 1);
+
+    // Kurangi
 
     int total_price = 0;
     for (int i = 0; i < items_max_size; i++)
@@ -349,12 +391,16 @@ void show_insert_item()
     scanf ("%32s", item.name);
     while ((c = fgetc(stdin)) != '\n' && c != EOF); // Ini perlu untuk flush input dari scanf
 
-    printf("Harga/kg: ");
+    printf("Harga (/kg): ");
     scanf ("%d", &item.price);
+
+    printf("Kuantitas (kg): ");
+    scanf ("%d", &item.inventory);
 
     printf("------------------------\n");
     printf("Nama: %s\n", item.name);
-    printf("Harga: %'d\n", item.price);
+    printf("Harga: %'d/kg\n", item.price);
+    printf("Kuantitas: %'dkg\n", item.inventory);
     printf("Simpan item?\n");
     printf("1. Ya\n");
     printf("0. Tidak\n");
@@ -451,10 +497,10 @@ int main()
         return 1;
     }
 
-    items[0] = (struct Item){.name = "Apel", .price = 50000};
-    items[1] = (struct Item){.name = "Tomat", .price = 10000};
-    items[2] = (struct Item){.name = "Wortel", .price = 12000};
-    items[3] = (struct Item){.name = "Cabai", .price = 75000};
+    items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
+    items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
+    items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
+    items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
 
     int menu = -1;
     do
