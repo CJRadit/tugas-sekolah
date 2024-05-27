@@ -3,10 +3,14 @@
 #include <string.h>
 #include <locale.h>
 #include <stdbool.h>
+#include "item.h"
+#include "user.h"
 
-// Kenapa I/O Windows berbeda ...
-// Dan aku tahu aku bisa pakai 1 dan 0 daripada true dan false
-// Tapi aku cuma butuh 2^1 untuk beberapa tempat
+// Aku tidak peduli, termios.h it is!
+// Online GDB pakai Linux
+// Aku gk tahu apakah ada cara untuk compile banyak file di Online GDB
+// Jadi ...
+// `gcc ./main.c ./item.c ./user.c -o ./build/main`
 
 struct User
 {
@@ -15,24 +19,18 @@ struct User
     int is_admin;
 };
 
-struct Item
-{
-    char name[32];
-    int price;
-    int inventory;
-};
-
 int users_size, users_max_size;
 struct User *users;
 int current_user_index;
 
-int items_size, items_max_size;
-struct Item *items;
+struct ItemData item_data;
 
 bool show_login()
 {
     struct User user;
     int c = 0;
+    char *pw;
+    size_t pw_len = 256;
 
     printf("========= LOGIN ========\n");
     printf("Username: ");
@@ -40,10 +38,14 @@ bool show_login()
     while ((c = fgetc(stdin)) != '\n' && c != EOF);
     c = 0;
     printf("Password: ");
-    scanf ("%256s", user.password);
-    while ((c = fgetc(stdin)) != '\n' && c != EOF);
+    hidden_input(&pw, &pw_len, stdin);
+    pw[strlen(pw) - 1] = '\0';
+    strcpy(user.password, pw);
+    printf("\n");
+    // scanf ("%256s", user.password);
+    // while ((c = fgetc(stdin)) != '\n' && c != EOF);
 
-    printf("========================");
+    printf("========================\n");
     for (int i = 0; i < users_size; i++)
     {
         if (strcmp(users[i].username, user.username) != 0) // strcmp() return 0 if true?
@@ -57,97 +59,22 @@ bool show_login()
     return false;
 }
 
-bool insert_item(struct Item item)
-{
-    // Menurut orang di internet, mengubah alokasi memori setiap kali
-    // array diubah akan tidak baik untuk performa, karena harus dijalankan
-    // setiap kali.
-    // Hence we double it! ;)
-    if (items_size >= items_max_size)
-    {
-        items_max_size *= 2;
-        items = (struct Item *)realloc(items, items_max_size * sizeof(struct Item));
-    }
-
-    if (items == NULL)
-    {
-        printf("Alokasi memori untuk items di insert_item() gagal.\n");
-        return false;
-    }
-
-    items[items_size] = item;
-    items_size++;
-    return true;
-}
-
-void delete_item(int item_index)
-{
-    // Cek kalau index gk out-of-bounds
-    if (item_index >= 0 || item_index < items_max_size)
-    {
-        // Geser element lain ke kiri ...
-        for (int i = item_index; i < items_size - 1; i++)
-        {
-            items[i] = items[i + 1];
-        }
-        items_size--;
-
-        if (items_size < (items_max_size / 2))
-        {
-            items_max_size /= 2;
-            items = (struct Item *)realloc(
-                items,
-                items_max_size * sizeof(struct Item));
-        }
-    }
-}
-
-bool check_item_inventory(int item_index, int qty)
-{
-    if (item_index < 0 || item_index >= items_max_size)
-        return false;
-
-    if (items[item_index].inventory < qty)
-        return false;
-
-    return true;
-}
-
-bool increase_item_inventory(int item_index, int qty)
-{
-    if (item_index < 0 || item_index >= items_max_size)
-        return false;
-
-    items[item_index].inventory += qty;
-    return true;
-}
-
-bool decrease_item_inventory(int item_index, int qty)
-{
-    if (item_index < 0 || item_index >= items_max_size)
-        return false;
-
-    if (items[item_index].inventory < qty)
-        return false;
-
-    items[item_index].inventory -= qty;
-    return true;
-}
-
 int show_menu()
 {
     int choice = -1;
-    int max_menu = 2;
-    if (users[current_user_index].is_admin == 1)
-        max_menu = 4;
+    int max_menu = 4;
+    if (users[current_user_index].is_admin != 1)
+        max_menu -= 2;
 
+    // There's something TODO ;)
+    int number = 1;
     printf("========= MENU =========\n");
-    printf("1. Kasir\n");
-    printf("2. Lihat daftar item\n");
+    printf("%d. Kasir\n", number++);
+    printf("%d. Lihat daftar item\n", number++);
     if (users[current_user_index].is_admin == 1)
     {
-        printf("3. Tambah item\n");
-        printf("4. Hapus item\n");
+        printf("%d. Tambah item\n", number++);
+        printf("%d. Hapus item\n", number++);
     }
     printf("0. Keluar\n");
     printf("------------------------\n");
@@ -164,27 +91,36 @@ int show_menu()
     return choice;
 }
 
-void show_items()
+void _show_items_main(bool include_empty)
 {
     int number = 0;
-    for (int i = 0; i < items_size; i++)
+    for (int i = 0; i < item_data.arr_size; i++)
     {
-        printf("%d. %s (%'d/kg) (%'dkg)\n", ++number, items[i].name, items[i].price, items[i].inventory);
+        if (include_empty == false && item_data.items[i].inventory <= 0)
+            continue;
+        printf(
+            "%d. %s (%'d/kg) (%'dkg)\n",
+            ++number,
+            item_data.items[i].name,
+            item_data.items[i].price,
+            item_data.items[i].inventory);
     }
 }
+void show_items_all() { _show_items_main(true);  }
+void show_items()     { _show_items_main(false); }
 
 void run_cashier()
 {
     // Metode cart saat ini butuh banyak memori jika punya banyak item di items
     int *cart;
-    cart = (int *)malloc(items_max_size * sizeof(int));
+    cart = (int *)malloc(item_data.arr_max_size * sizeof(int));
     if (cart == NULL)
     {
         printf("Alokasi memori untuk cart di run_cashier() gagal.\n");
         return;
     }
     // Why, Windows? Why?
-    for (int i = 0; i < items_max_size; i++)
+    for (int i = 0; i < item_data.arr_max_size; i++)
         cart[i] = 0;
 
     int finished = 0;
@@ -203,10 +139,10 @@ void run_cashier()
         {
             // Referensi: ANSI code
             printf("\033[A");
-            printf("Pilih (0-%'d): ", items_size);
+            printf("Pilih (0-%'d): ", item_data.arr_size);
             printf("    \b\b\b\b");
             scanf("%d", &choice);
-        } while (choice < 0 || choice > items_size);
+        } while (choice < 0 || choice > item_data.arr_size);
         if (choice == 0)
         {
             printf("========================\n");
@@ -222,10 +158,10 @@ void run_cashier()
             printf("    \b\b\b\b");
             scanf("%d", &qty);
 
-            if (check_item_inventory(choice, qty) == false)
+            if (check_item_inventory(item_data, choice, qty) == false)
             {
                 printf("\033[A");
-                printf("Berat (%'dkg) melebihi kuantitas item (%'dkg).\n\n", qty, items[choice].inventory);
+                printf("Berat (%'dkg) melebihi kuantitas item (%'dkg).\n\n", qty, item_data.items[choice].inventory);
                 qty = 0;
             }
         } while (qty <= 0);
@@ -256,11 +192,11 @@ void run_cashier()
         {
             int number = 0;
             printf("========= CART =========\n");
-            for (int i = 0; i < items_max_size; i++)
+            for (int i = 0; i < item_data.arr_max_size; i++)
             {
                 if (cart[i] <= 0)
                     continue;
-                printf("%d. %s => %'dkg\n", ++number, items[i].name, cart[i]);
+                printf("%d. %s => %'dkg\n", ++number, item_data.items[i].name, cart[i]);
             }
             printf("========================\n\n");
             goto label_checkout; // Mungkin aku akan buat function terpisah ...
@@ -271,11 +207,12 @@ void run_cashier()
     // Kurangi
 
     int total_price = 0;
-    for (int i = 0; i < items_max_size; i++)
+    for (int i = 0; i < item_data.arr_max_size; i++)
     {
         if (cart[i] <= 0)
             continue;
-        total_price += items[i].price * cart[i];
+        total_price += item_data.items[i].price * cart[i];
+        item_data.items[i].inventory -= cart[i];
     }
 
     char use_discount;
@@ -337,12 +274,19 @@ void run_cashier()
 
     // NOTA
     printf("========= NOTA =========\n");
-    for (int i = 0; i < items_max_size; i++)
+    for (int i = 0; i < item_data.arr_max_size; i++)
     {
         if (cart[i] <= 0)
             continue;
-        printf("%s => %'dkg\n", items[i].name, cart[i]);
-        printf("> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
+        printf(
+            "%s => %'dkg\n",
+            item_data.items[i].name,
+            cart[i]);
+        printf(
+            "> %'d x %'d = %'d\n",
+            item_data.items[i].price,
+            cart[i],
+            item_data.items[i].price * cart[i]);
     }
     printf("------------------------\n");
     printf("Harga:   %'d\n", total_price);
@@ -362,8 +306,17 @@ void run_cashier()
     {
         if (cart[i] <= 0)
             continue;
-        fprintf(file, "%s => %'dkg\n", items[i].name, cart[i]);
-        fprintf(file, "> %'d x %'d = %'d\n", items[i].price, cart[i], items[i].price * cart[i]);
+        fprintf(
+            file,
+            "%s => %'dkg\n",
+            item_data.items[i].name,
+            cart[i]);
+        fprintf(
+            file,
+            "> %'d x %'d = %'d\n",
+            item_data.items[i].price,
+            cart[i],
+            item_data.items[i].price * cart[i]);
     }
     fprintf(file, "------------------------\n");
     fprintf(file, "Harga:   %'d\n", total_price);
@@ -380,7 +333,7 @@ void run_cashier()
 }
 
 // Ini bukan aplikasi produksi, jadi aku gk perlu cek admin di sini, atau di atas
-void show_insert_item()
+void run_insert_item()
 {
     struct Item item;
 
@@ -413,7 +366,7 @@ void show_insert_item()
         printf("    \b\b\b\b");
         scanf("%d", &save);
     } while (save < 0 || save > 1);
-    if (save == 1 && insert_item(item) == true)
+    if (save == 1 && insert_item(item_data, item) == true)
     {
         printf("------------------------\n");
         printf("Item tersimpan!\n");
@@ -421,21 +374,21 @@ void show_insert_item()
     printf("========================\n");
 }
 
-void show_delete_item()
+void run_delete_item()
 {
     int i = -1;
 
     printf("====== DELETE ITEM =====\n");
-    show_items();
+    show_items_all();
     printf("0. Keluar\n");
     printf("------------------------\n\n");
 
     do {
         printf("\033[A");
-        printf("Pilih (0-%'d): ", items_size);
+        printf("Pilih (0-%'d): ", item_data.arr_size);
         printf("    \b\b\b\b");
         scanf ("%d", &i);
-    } while (i < 0 || i > items_size);
+    } while (i < 0 || i > item_data.arr_size);
     if (i == 0) {
         printf("========================\n");
         return;
@@ -443,7 +396,7 @@ void show_delete_item()
     i--;
 
     printf("------------------------\n");
-    printf("Hapus item %s?\n", items[i].name);
+    printf("Hapus item %s?\n", item_data.items[i].name);
     printf("1. Ya\n");
     printf("0. Tidak\n");
     printf("------------------------\n\n");
@@ -461,7 +414,7 @@ void show_delete_item()
         printf("========================\n");
         return;
     }
-    delete_item(i);
+    delete_item(item_data, i);
     printf("------------------------\n");
     printf("Item dihapus!\n");
 
@@ -488,19 +441,19 @@ int main()
     if ((login = show_login()) != true)
         return 0;
 
-    items_size = 4;
-    items_max_size = 4;
-    items = (struct Item *)malloc(items_size * sizeof(struct Item));
-    if (items == NULL)
+    item_data.arr_size = 4;
+    item_data.arr_max_size = 4;
+    item_data.items = (struct Item *)malloc(item_data.arr_size * sizeof(struct Item));
+    if (item_data.items == NULL)
     {
         printf("Alokasi memori untuk items gagal.\n");
         return 1;
     }
 
-    items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
-    items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
-    items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
-    items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
+    item_data.items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
+    item_data.items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
+    item_data.items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
+    item_data.items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
 
     int menu = -1;
     do
@@ -516,21 +469,21 @@ int main()
             break;
         case 2:
             printf("========= ITEM =========\n");
-            show_items();
+            show_items_all();
             printf("========================\n");
             break;
         case 3:
-            show_insert_item();
+            run_insert_item();
             break;
         case 4:
-            show_delete_item();
+            run_delete_item();
             break;
         }
 
         printf("\n");
     } while (menu != 0);
 
-    printf("      Sampai jumpa!\n\n");
-    free(items);
+    printf("      Sampai jumpa!\n");
+    // free(items); // Apa aku butuh ini? Lagipula OS akan klaim kembali memori dari program yang sudah berhenti.
     return 0;
 }
