@@ -18,11 +18,11 @@ struct ItemData
   struct Item *items;
 };
 
-bool insert_item(struct ItemData item_data, struct Item item      );
-void delete_item(struct ItemData item_data,         int item_index);
+bool insert_item(struct ItemData *item_data, struct Item item      );
+void delete_item(struct ItemData *item_data,         int item_index);
 
-bool check_item_inventory   (struct ItemData item_data, int index, int quantity);
-bool increase_item_inventory(struct ItemData item_data, int index, int quantity);
-bool decrease_item_inventory(struct ItemData item_data, int index, int quantity);
+bool check_item_inventory   (struct ItemData *item_data, int index, int quantity);
+bool increase_item_inventory(struct ItemData *item_data, int index, int quantity);
+bool decrease_item_inventory(struct ItemData *item_data, int index, int quantity);
 
 #endif /* ITEM_H */

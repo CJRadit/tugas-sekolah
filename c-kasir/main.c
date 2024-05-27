@@ -23,7 +23,7 @@ int users_size, users_max_size;
 struct User *users;
 int current_user_index;
 
-struct ItemData item_data;
+struct ItemData *item_data, _id;
 
 bool show_login()
 {
@@ -94,16 +94,16 @@ int show_menu()
 void _show_items_main(bool include_empty)
 {
     int number = 0;
-    for (int i = 0; i < item_data.arr_size; i++)
+    for (int i = 0; i < item_data->arr_size; i++)
     {
-        if (include_empty == false && item_data.items[i].inventory <= 0)
+        if (include_empty == false && item_data->items[i].inventory <= 0)
             continue;
         printf(
             "%d. %s (%'d/kg) (%'dkg)\n",
             ++number,
-            item_data.items[i].name,
-            item_data.items[i].price,
-            item_data.items[i].inventory);
+            item_data->items[i].name,
+            item_data->items[i].price,
+            item_data->items[i].inventory);
     }
 }
 void show_items_all() { _show_items_main(true);  }
@@ -113,14 +113,14 @@ void run_cashier()
 {
     // Metode cart saat ini butuh banyak memori jika punya banyak item di items
     int *cart;
-    cart = (int *)malloc(item_data.arr_max_size * sizeof(int));
+    cart = (int *)malloc(item_data->arr_max_size * sizeof(int));
     if (cart == NULL)
     {
         printf("Alokasi memori untuk cart di run_cashier() gagal.\n");
         return;
     }
     // Why, Windows? Why?
-    for (int i = 0; i < item_data.arr_max_size; i++)
+    for (int i = 0; i < item_data->arr_max_size; i++)
         cart[i] = 0;
 
     int finished = 0;
@@ -139,10 +139,10 @@ void run_cashier()
         {
             // Referensi: ANSI code
             printf("\033[A");
-            printf("Pilih (0-%'d): ", item_data.arr_size);
+            printf("Pilih (0-%'d): ", item_data->arr_size);
             printf("    \b\b\b\b");
             scanf("%d", &choice);
-        } while (choice < 0 || choice > item_data.arr_size);
+        } while (choice < 0 || choice > item_data->arr_size);
         if (choice == 0)
         {
             printf("========================\n");
@@ -161,7 +161,7 @@ void run_cashier()
             if (check_item_inventory(item_data, choice, qty) == false)
             {
                 printf("\033[A");
-                printf("Berat (%'dkg) melebihi kuantitas item (%'dkg).\n\n", qty, item_data.items[choice].inventory);
+                printf("Berat (%'dkg) melebihi kuantitas item (%'dkg).\n\n", qty, item_data->items[choice].inventory);
                 qty = 0;
             }
         } while (qty <= 0);
@@ -192,11 +192,11 @@ void run_cashier()
         {
             int number = 0;
             printf("========= CART =========\n");
-            for (int i = 0; i < item_data.arr_max_size; i++)
+            for (int i = 0; i < item_data->arr_max_size; i++)
             {
                 if (cart[i] <= 0)
                     continue;
-                printf("%d. %s => %'dkg\n", ++number, item_data.items[i].name, cart[i]);
+                printf("%d. %s => %'dkg\n", ++number, item_data->items[i].name, cart[i]);
             }
             printf("========================\n\n");
             goto label_checkout; // Mungkin aku akan buat function terpisah ...
@@ -207,12 +207,12 @@ void run_cashier()
     // Kurangi
 
     int total_price = 0;
-    for (int i = 0; i < item_data.arr_max_size; i++)
+    for (int i = 0; i < item_data->arr_max_size; i++)
     {
         if (cart[i] <= 0)
             continue;
-        total_price += item_data.items[i].price * cart[i];
-        item_data.items[i].inventory -= cart[i];
+        total_price += item_data->items[i].price * cart[i];
+        item_data->items[i].inventory -= cart[i];
     }
 
     char use_discount;
@@ -274,19 +274,19 @@ void run_cashier()
 
     // NOTA
     printf("========= NOTA =========\n");
-    for (int i = 0; i < item_data.arr_max_size; i++)
+    for (int i = 0; i < item_data->arr_max_size; i++)
     {
         if (cart[i] <= 0)
             continue;
         printf(
             "%s => %'dkg\n",
-            item_data.items[i].name,
+            item_data->items[i].name,
             cart[i]);
         printf(
             "> %'d x %'d = %'d\n",
-            item_data.items[i].price,
+            item_data->items[i].price,
             cart[i],
-            item_data.items[i].price * cart[i]);
+            item_data->items[i].price * cart[i]);
     }
     printf("------------------------\n");
     printf("Harga:   %'d\n", total_price);
@@ -309,14 +309,14 @@ void run_cashier()
         fprintf(
             file,
             "%s => %'dkg\n",
-            item_data.items[i].name,
+            item_data->items[i].name,
             cart[i]);
         fprintf(
             file,
             "> %'d x %'d = %'d\n",
-            item_data.items[i].price,
+            item_data->items[i].price,
             cart[i],
-            item_data.items[i].price * cart[i]);
+            item_data->items[i].price * cart[i]);
     }
     fprintf(file, "------------------------\n");
     fprintf(file, "Harga:   %'d\n", total_price);
@@ -385,10 +385,10 @@ void run_delete_item()
 
     do {
         printf("\033[A");
-        printf("Pilih (0-%'d): ", item_data.arr_size);
+        printf("Pilih (0-%'d): ", item_data->arr_size);
         printf("    \b\b\b\b");
         scanf ("%d", &i);
-    } while (i < 0 || i > item_data.arr_size);
+    } while (i < 0 || i > item_data->arr_size);
     if (i == 0) {
         printf("========================\n");
         return;
@@ -396,7 +396,7 @@ void run_delete_item()
     i--;
 
     printf("------------------------\n");
-    printf("Hapus item %s?\n", item_data.items[i].name);
+    printf("Hapus item %s?\n", item_data->items[i].name);
     printf("1. Ya\n");
     printf("0. Tidak\n");
     printf("------------------------\n\n");
@@ -441,19 +441,21 @@ int main()
     if ((login = show_login()) != true)
         return 0;
 
-    item_data.arr_size = 4;
-    item_data.arr_max_size = 4;
-    item_data.items = (struct Item *)malloc(item_data.arr_size * sizeof(struct Item));
-    if (item_data.items == NULL)
+    item_data = &_id;
+
+    item_data->arr_size = 4;
+    item_data->arr_max_size = 4;
+    item_data->items = (struct Item *)malloc(item_data->arr_size * sizeof(struct Item));
+    if (item_data->items == NULL)
     {
         printf("Alokasi memori untuk items gagal.\n");
         return 1;
     }
 
-    item_data.items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
-    item_data.items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
-    item_data.items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
-    item_data.items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
+    item_data->items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
+    item_data->items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
+    item_data->items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
+    item_data->items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
 
     int menu = -1;
     do
