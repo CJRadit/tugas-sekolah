@@ -24,6 +24,84 @@ int current_user_index;
 
 struct ItemData *item_data, _id;
 
+bool show_login();
+int show_menu();
+void _show_items_main(bool include_empty);
+void show_items_all() { _show_items_main(true);  }
+void show_items()     { _show_items_main(false); }
+void run_cashier();
+void run_insert_item();
+void run_delete_item();
+
+int main()
+{
+    setlocale(LC_NUMERIC, "");
+
+    users_size = 2;
+    users_max_size = 2;
+    users = (struct User *)malloc(users_size * sizeof(struct User));
+    if (users == NULL)
+    {
+        printf("Alokasi memori untuk items gagal.\n");
+        return 1;
+    }
+
+    users[0] = (struct User){.username = "admin", .password = "admin", .is_admin = 1};
+    users[1] = (struct User){.username = "kasir", .password = "12345678", .is_admin = 0};
+
+    int login;
+    if ((login = show_login()) != true)
+        return 0;
+
+    item_data = &_id;
+
+    item_data->arr_size = 4;
+    item_data->arr_max_size = 4;
+    item_data->items = (struct Item *)malloc(item_data->arr_size * sizeof(struct Item));
+    if (item_data->items == NULL)
+    {
+        printf("Alokasi memori untuk items gagal.\n");
+        return 1;
+    }
+
+    item_data->items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
+    item_data->items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
+    item_data->items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
+    item_data->items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
+
+    int menu = -1;
+    do
+    {
+        menu = show_menu();
+        if (menu != 0)
+            printf("\n\n");
+
+        switch (menu)
+        {
+        case 1:
+            run_cashier();
+            break;
+        case 2:
+            printf("========= ITEM =========\n");
+            show_items_all();
+            printf("========================\n");
+            break;
+        case 3:
+            run_insert_item();
+            break;
+        case 4:
+            run_delete_item();
+            break;
+        }
+
+        printf("\n");
+    } while (menu != 0);
+
+    printf("      Sampai jumpa!\n\n");
+    // free(items); // Apa aku butuh ini? Lagipula OS akan klaim kembali memori dari program yang sudah berhenti.
+    return 0;
+}
+
 bool show_login()
 {
     struct User user;
@@ -129,127 +207,6 @@ void _show_items_main(bool include_empty)
             item_data->items[i].price,
             item_data->items[i].inventory);
     }
-}
-void show_items_all() { _show_items_main(true);  }
-void show_items()     { _show_items_main(false); }
-
-void run_delete_item()
-{
-    int i = -1;
-
-    printf("====== DELETE ITEM =====\n");
-    show_items_all();
-    printf("0. Keluar\n");
-    printf("------------------------\n\n");
-
-    do {
-        printf("\033[A");
-        printf("Pilih (0-%'d): ", item_data->arr_size);
-        printf("    \b\b\b\b");
-        scanf ("%d", &i);
-    } while (i < 0 || i > item_data->arr_size);
-    if (i == 0) {
-        printf("========================\n");
-        return;
-    }
-    i--;
-
-    printf("------------------------\n");
-    printf("Hapus item %s?\n", item_data->items[i].name);
-    printf("1. Ya\n");
-    printf("0. Tidak\n");
-    printf("------------------------\n\n");
-
-    int delete = -1;
-    do
-    {
-        printf("\033[A");
-        printf("Pilih (0-1): ");
-        printf("    \b\b\b\b");
-        scanf("%d", &delete);
-    } while (delete < 0 || delete > 1);
-    if (i == 0)
-    {
-        printf("========================\n");
-        return;
-    }
-    delete_item(item_data, i);
-    printf("------------------------\n");
-    printf("Item dihapus!\n");
-
-    printf("========================\n");
-}
-
-void run_cashier();
-void run_insert_item();
-
-int main()
-{
-    setlocale(LC_NUMERIC, "");
-
-    users_size = 2;
-    users_max_size = 2;
-    users = (struct User *)malloc(users_size * sizeof(struct User));
-    if (users == NULL)
-    {
-        printf("Alokasi memori untuk items gagal.\n");
-        return 1;
-    }
-
-    users[0] = (struct User){.username = "admin", .password = "admin", .is_admin = 1};
-    users[1] = (struct User){.username = "kasir", .password = "12345678", .is_admin = 0};
-
-    int login;
-    if ((login = show_login()) != true)
-        return 0;
-
-    item_data = &_id;
-
-    item_data->arr_size = 4;
-    item_data->arr_max_size = 4;
-    item_data->items = (struct Item *)malloc(item_data->arr_size * sizeof(struct Item));
-    if (item_data->items == NULL)
-    {
-        printf("Alokasi memori untuk items gagal.\n");
-        return 1;
-    }
-
-    item_data->items[0] = (struct Item){.name = "Apel", .price = 50000, .inventory = 100};
-    item_data->items[1] = (struct Item){.name = "Tomat", .price = 10000, .inventory = 100};
-    item_data->items[2] = (struct Item){.name = "Wortel", .price = 12000, .inventory = 100};
-    item_data->items[3] = (struct Item){.name = "Cabai", .price = 75000, .inventory = 100};
-
-    int menu = -1;
-    do
-    {
-        menu = show_menu();
-        if (menu != 0)
-            printf("\n\n");
-
-        switch (menu)
-        {
-        case 1:
-            run_cashier();
-            break;
-        case 2:
-            printf("========= ITEM =========\n");
-            show_items_all();
-            printf("========================\n");
-            break;
-        case 3:
-            run_insert_item();
-            break;
-        case 4:
-            run_delete_item();
-            break;
-        }
-
-        printf("\n");
-    } while (menu != 0);
-
-    printf("      Sampai jumpa!\n\n");
-    // free(items); // Apa aku butuh ini? Lagipula OS akan klaim kembali memori dari program yang sudah berhenti.
-    return 0;
 }
 
 void run_cashier()
@@ -514,5 +471,52 @@ void run_insert_item()
         printf("------------------------\n");
         printf("Item tersimpan!\n");
     }
+    printf("========================\n");
+}
+
+void run_delete_item()
+{
+    int i = -1;
+
+    printf("====== DELETE ITEM =====\n");
+    show_items_all();
+    printf("0. Keluar\n");
+    printf("------------------------\n\n");
+
+    do {
+        printf("\033[A");
+        printf("Pilih (0-%'d): ", item_data->arr_size);
+        printf("    \b\b\b\b");
+        scanf ("%d", &i);
+    } while (i < 0 || i > item_data->arr_size);
+    if (i == 0) {
+        printf("========================\n");
+        return;
+    }
+    i--;
+
+    printf("------------------------\n");
+    printf("Hapus item %s?\n", item_data->items[i].name);
+    printf("1. Ya\n");
+    printf("0. Tidak\n");
+    printf("------------------------\n\n");
+
+    int delete = -1;
+    do
+    {
+        printf("\033[A");
+        printf("Pilih (0-1): ");
+        printf("    \b\b\b\b");
+        scanf("%d", &delete);
+    } while (delete < 0 || delete > 1);
+    if (i == 0)
+    {
+        printf("========================\n");
+        return;
+    }
+    delete_item(item_data, i);
+    printf("------------------------\n");
+    printf("Item dihapus!\n");
+
     printf("========================\n");
 }
