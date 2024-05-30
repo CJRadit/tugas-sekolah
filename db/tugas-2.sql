@@ -21,23 +21,22 @@ CREATE TABLE `shipment` (
     `qty` INT(16) NOT NULL
 );
 
--- (`scode`, `sname`, `status`, `city`)
 INSERT INTO `supplier`
 VALUES
-    ('S1', 'ARIS', 20, 'Semarang'),
-    ('S2', 'EKO', 10, 'Jakarta'),
-    ('S3', 'BETA', 30, 'Surabaya'),
-    ('S4', 'KOLIK', 20, 'Medan'),
+    ('S1', 'ARIS',   20, 'Semarang'),
+    ('S2', 'EKO',    10, 'Jakarta'),
+    ('S3', 'BETA',   30, 'Surabaya'),
+    ('S4', 'KOLIK',  20, 'Medan'),
     ('S5', 'SHINTA', 30, 'Yogyakarta');
 
 INSERT INTO `parts`
 VALUES
-    ('P1', 'NUT', 'Merah', 12, 'Semarang'),
-    ('P2', 'BOLT', 'Hijau', 17, 'Jakarta'),
-    ('P3', 'SCREW', 'Biru', 17, 'Jakarta'),
+    ('P1', 'NUT',   'Merah', 12, 'Semarang'),
+    ('P2', 'BOLT',  'Hijau', 17, 'Jakarta'),
+    ('P3', 'SCREW', 'Biru',  17, 'Jakarta'),
     ('P4', 'SCREW', 'Merah', 14, 'Semarang'),
-    ('P5', 'CAM', 'Biru', 12, 'Semarang'),
-    ('P6', 'COG', 'Merah', 19, 'Jakarta');
+    ('P5', 'CAM',   'Biru',  12, 'Semarang'),
+    ('P6', 'COG',   'Merah', 19, 'Jakarta');
 
 INSERT INTO `shipment`
 VALUES
