@@ -1,23 +1,15 @@
 #include <stdio.h>
 
 void bubble_sort(int *numbers, int length) {
-    int is_swapped = 0;
     for (int i = 0; i < length - 1; i++) {
-        if (numbers[i] <= numbers[i + 1])
-            continue;
-        int tmp = numbers[i];
-        numbers[i] = numbers[i + 1];
-        numbers[i + 1] = tmp;
-        is_swapped = 1;
+        for (int j = 0; j < length - i - 1; j++) {
+            if (numbers[j] <= numbers[j + 1])
+                continue;
+            int tmp = numbers[j];
+            numbers[j] = numbers[j + 1];
+            numbers[j + 1] = tmp;
+        }
     }
-    if (is_swapped = 1)
-        bubble_sort(numbers, length);
-    // for (int i = 0; i < length - 1; i++) {
-    //     if (numbers[i] <= numbers[i + 1])
-    //         continue;
-    //     bubble_sort(numbers, length);
-    //     return;
-    // }
 }
 
 int main() {
@@ -31,6 +23,7 @@ int main() {
     for (int i = 0; i < length; i++) {
         printf("%d ", sorted[i]);
     }
+    printf("\n");
 
     return 0;
 }
