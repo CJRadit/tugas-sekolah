@@ -11,15 +11,15 @@
 #include "user.h"
 #endif
 
-struct User
+typedef struct User
 {
     char username[32];
     char password[256];
     int is_admin;
-};
+} User;
 
 int users_size, users_max_size;
-struct User *users;
+User *users;
 int current_user_index;
 
 struct ItemData *item_data, _id;
@@ -32,6 +32,13 @@ void show_items()     { _show_items_main(false); }
 void run_cashier();
 void run_insert_item();
 void run_delete_item();
+void sort_items(struct ItemData *item_data, int *sorted_index, int sort_by);
+
+#define SORT_NONE       0
+#define SORT_PRICE_ASC  1
+#define SORT_PRICE_DESC 2
+#define SORT_INV_ASC    3
+#define SORT_INV_DESC   4
 
 int main()
 {
@@ -39,15 +46,15 @@ int main()
 
     users_size = 2;
     users_max_size = 2;
-    users = (struct User *)malloc(users_size * sizeof(struct User));
+    users = (User *)malloc(users_size * sizeof(User));
     if (users == NULL)
     {
         printf("Alokasi memori untuk items gagal.\n");
         return 1;
     }
 
-    users[0] = (struct User){.username = "admin", .password = "admin", .is_admin = 1};
-    users[1] = (struct User){.username = "kasir", .password = "12345678", .is_admin = 0};
+    users[0] = (User){.username = "admin", .password = "admin", .is_admin = 1};
+    users[1] = (User){.username = "kasir", .password = "12345678", .is_admin = 0};
 
     int login;
     if ((login = show_login()) != true)
@@ -104,7 +111,7 @@ int main()
 
 bool show_login()
 {
-    struct User user;
+    User user;
     int c = 0;
     size_t pw_len = 256;
 
@@ -196,16 +203,22 @@ int show_menu()
 void _show_items_main(bool include_empty)
 {
     int number = 0;
-    for (int i = 0; i < item_data->arr_size; i++)
+
+    // struct ItemData _nd, *new_data = &_nd;
+    int length = item_data->arr_size;
+    int _index[length], *index = _index;
+    sort_items(item_data, index, SORT_PRICE_DESC);
+
+    for (int i = 0; i < length; i++)
     {
-        if (include_empty == false && item_data->items[i].inventory <= 0)
+        if (include_empty == false && item_data->items[index[i]].inventory <= 0)
             continue;
         printf(
             "%d. %s (%'d/kg) (%'dkg)\n",
             ++number,
-            item_data->items[i].name,
-            item_data->items[i].price,
-            item_data->items[i].inventory);
+            item_data->items[index[i]].name,
+            item_data->items[index[i]].price,
+            item_data->items[index[i]].inventory);
     }
 }
 
@@ -519,4 +532,51 @@ void run_delete_item()
     printf("Item dihapus!\n");
 
     printf("========================\n");
+}
+
+void sort_items(struct ItemData *d, int *si, int sort_by)
+{
+    if (d->items == NULL)
+        return;
+
+    int length = d->arr_size;
+    for (int i = 0; i < length; i++)
+        si[i] = i;
+    if (sort_by < 1 || sort_by > 4)
+        return;
+
+    for (int i = 0; i < length - 1; i++)
+    {
+        for (int j = 0; j < length - i - 1; j++)
+        {
+            /* switch (sort_by)
+            {
+            case SORT_PRICE_ASC:
+                if (d->items[si[j]].price <= d->items[si[j + 1]].price)
+                    continue;
+            case SORT_PRICE_DESC:
+                if (d->items[si[j]].price > d->items[si[j + 1]].price)
+                    continue;
+            case SORT_INV_ASC:
+                if (d->items[si[j]].inventory <= d->items[si[j + 1]].inventory)
+                    continue;
+            case SORT_INV_DESC:
+                if (d->items[si[j]].inventory > d->items[si[j + 1]].inventory)
+                    continue;
+            } */
+            // Ada apa dengan switch ...
+            if (sort_by == SORT_PRICE_ASC && d->items[si[j]].price <= d->items[si[j + 1]].price)
+                continue;
+            else if (sort_by == SORT_PRICE_DESC && d->items[si[j]].price > d->items[si[j + 1]].price)
+                continue;
+            else if (sort_by == SORT_INV_ASC && d->items[si[j]].inventory <= d->items[si[j + 1]].inventory)
+                continue;
+            else if (sort_by == SORT_INV_DESC && d->items[si[j]].inventory > d->items[si[j + 1]].inventory)
+                continue;
+
+            int tmp = si[j];
+            si[j] = si[j + 1];
+            si[j + 1] = tmp;
+        }
+    }
 }
