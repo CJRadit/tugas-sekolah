@@ -11,6 +11,12 @@
 #include "user.h"
 #endif
 
+#define SORT_NONE 0
+#define SORT_PRICE_ASC 1
+#define SORT_PRICE_DESC 2
+#define SORT_INV_ASC 3
+#define SORT_INV_DESC 4
+
 typedef struct User
 {
     char username[32];
@@ -26,19 +32,13 @@ struct ItemData *item_data, _id;
 
 bool show_login();
 int show_menu();
-void _show_items_main(bool include_empty);
-void show_items_all() { _show_items_main(true);  }
-void show_items()     { _show_items_main(false); }
+void _show_items_main(bool include_empty, int sort_option);
+void show_items_all(int sort_option) { _show_items_main(true, sort_option); }
+void show_items() { _show_items_main(false, SORT_NONE); }
 void run_cashier();
 void run_insert_item();
 void run_delete_item();
 void sort_items(struct ItemData *item_data, int *sorted_index, int sort_by);
-
-#define SORT_NONE       0
-#define SORT_PRICE_ASC  1
-#define SORT_PRICE_DESC 2
-#define SORT_INV_ASC    3
-#define SORT_INV_DESC   4
 
 int main()
 {
@@ -90,7 +90,7 @@ int main()
             break;
         case 2:
             printf("========= ITEM =========\n");
-            show_items_all();
+            show_items_all(SORT_NONE);
             printf("========================\n");
             break;
         case 3:
@@ -200,14 +200,14 @@ int show_menu()
     return choice;
 }
 
-void _show_items_main(bool include_empty)
+void _show_items_main(bool include_empty, int sort_option)
 {
     int number = 0;
 
     // struct ItemData _nd, *new_data = &_nd;
     int length = item_data->arr_size;
     int _index[length], *index = _index;
-    sort_items(item_data, index, SORT_PRICE_DESC);
+    sort_items(item_data, index, sort_option);
 
     for (int i = 0; i < length; i++)
     {
@@ -219,6 +219,42 @@ void _show_items_main(bool include_empty)
             item_data->items[index[i]].name,
             item_data->items[index[i]].price,
             item_data->items[index[i]].inventory);
+    }
+    printf("------------------------\n");
+    printf("1. Urut harga (naik)\n");
+    printf("2. Urut harga (turun)\n");
+    printf("3. Urut kuantitas (naik)\n");
+    printf("4. Urut kuantitas (turun)\n");
+    printf("0. Kembali\n");
+    printf("------------------------\n\n");
+    int choice = -1;
+    do
+    {
+        printf("\033[A");
+        printf("Pilih (0-4): ");
+        printf("    \b\b\b\b");
+        scanf("%d", &choice);
+    } while (choice < 0 || choice > 4);
+
+    if (choice == 0)
+        return;
+
+    printf("========================\n\n");
+    printf("========= ITEM =========\n");
+    switch (choice)
+    {
+    case 1:
+        show_items_all(SORT_PRICE_ASC);
+        break;
+    case 2:
+        show_items_all(SORT_PRICE_DESC);
+        break;
+    case 3:
+        show_items_all(SORT_INV_ASC);
+        break;
+    case 4:
+        show_items_all(SORT_INV_DESC);
+        break;
     }
 }
 
@@ -492,7 +528,7 @@ void run_delete_item()
     int i = -1;
 
     printf("====== DELETE ITEM =====\n");
-    show_items_all();
+    show_items_all(SORT_NONE);
     printf("0. Keluar\n");
     printf("------------------------\n\n");
 
