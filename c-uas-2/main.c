@@ -78,24 +78,19 @@ int main()
     {
         printf(" %d", list->angka[i]);
     }
-
     printf("\nSum: %d", list->sum);
-    
     printf("\nMean: %2f", list->mean);
-    
     printf("\nAsc:");
     for (int i = 0; i < 15; i++)
     {
         printf(" %d", list->asc[i]);
     }
-
     printf("\nDesc:");
     for (int i = 0; i < 15; i++)
     {
         printf(" %d", list->desc[i]);
     }
-    
     printf("\nMin: %d", list->min);
-    
     printf("\nMax: %d", list->max);
+    printf("\n");
 }
