@@ -413,7 +413,7 @@ class Product extends BaseController
 `view()` digunakan untuk menampilkan file view yang berada di dalam folder `app/Views`.
 
 File view yang perlu dipanggil `view()` dimasukkan tanpa menggunakan ekstensi `.php`.
-Pada kasus ini, file `app/Views/product.php` dipanggil dengan `view('product`)`.
+Pada kasus ini, file `app/Views/product.php` dipanggil dengan `view('product')`.
 Contoh lainnya, file `app/Views/admin/form.php` dipanggil dengan `view('admin/form')`.
 
 Perubahan tersebut dapat dilihat di `localhost:8080/products`, sesuai yang diatur di route.
