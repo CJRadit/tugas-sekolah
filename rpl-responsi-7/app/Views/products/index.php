@@ -54,7 +54,7 @@ $next_query = [
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <h1>Daftar Produk</h1>
 
-    <div style="display: flex; gap: 1rem; align-items: start;">
+    <div style="display: flex; gap: .5rem; align-items: start;">
       <!-- Search -->
       <form id="_search" action="/products" method="GET">
         <fieldset role="group">
@@ -119,7 +119,7 @@ $next_query = [
   </table>
 
   <!-- Pagination -->
-  <div style="width: fit-content; margin-inline: auto">
+  <div style="display: flex; width: fit-content; margin-inline: auto">
     <a
       href="/products<?= !empty($previous_query) ? '?' . http_build_query($previous_query) : '' ?>"
       role="button"
