@@ -13,7 +13,7 @@ class ProductController extends BaseController
     {
         $product = new Product();
 
-        $paginate = 3;
+        $paginate = 5;
         $page = intval($this->request->getGet('page') ?? 1);
         $search = $this->request->getGet('search');
         if ($search) {
